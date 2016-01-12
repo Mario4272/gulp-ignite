@@ -1,6 +1,6 @@
 # gulp-ignite
 
-### WIP &mdash; No work even close to usable.
+### WIP &mdash; Nowhere even close to usable.
 
 However if you dare feel brave you can try it like so:
 
