@@ -1,0 +1,34 @@
+{
+  "name": "gulp-ignite",
+  "version": "0.0.1",
+  "description": "A gulp igniter loaded with some of the most common tasks ready to go.",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/jscarmona/gulp-ignite.git"
+  },
+  "keywords": [
+    "gulp",
+    "starter",
+    "tasks"
+  ],
+  "author": "Javier Carmona",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/jscarmona/gulp-ignite/issues"
+  },
+  "homepage": "https://github.com/jscarmona/gulp-ignite#readme",
+  "devDependencies": {
+    "gulp": "^3.9.0",
+    "gulp-help": "^1.6.1",
+    "gulp-load-plugins": "^1.2.0",
+    "gulp-util": "^3.0.7",
+    "include-all": "^0.1.6",
+    "lodash": "^3.10.1",
+    "notifier": "^0.1.7",
+    "pretty-hrtime": "^1.0.1"
+  }
+}
