@@ -1,66 +1,39 @@
 'use strict';
 
-import gulp from 'gulp';
-import includeAll from 'include-all';
-import loadPlugins from 'gulp-load-plugins';
-import path from 'path';
-import config from './common/config';
-
-const $ = loadPlugins(config.loadPlugins);
-const gulpHelp = $.help(gulp, config.help);
-const tasks = includeAll({
-  dirname: path.resolve(__dirname, 'tasks'),
-  filter: /(.+)index\.js$/
+Object.defineProperty(exports, "__esModule", {
+  value: true
 });
 
-export default {
-  /**
-   * Include all gulp tasks
-   * @param  {Object} options Config overrides by task
-   */
-  all(options = {}) {
-    for (var task in tasks) {
-      if (tasks.hasOwnProperty(task)) {
-        this.register(task, options[task.name] || {});
-      }
-    }
-  },
+var _gulp = require('gulp');
 
-  /**
-   * Include only the specified gulp tasks
-   * @param  {Array} tasksList An array of tasks name
-   * @param  {Object} options  Config overrides by task
-   */
-  only(tasksList, options = {}) {
-    for (var task in tasks) {
-      if (tasks.hasOwnProperty(task) && tasksList.includes(task.name)) {
-        this.register(task, options[task.name] || {});
-      }
-    }
-  },
+var _gulp2 = _interopRequireDefault(_gulp);
 
-  /**
-   * Include all gulp tasks except the specified tasks
-   * @param  {Array} tasksList An array of tasks name to ignore
-   * @param  {Object} options  Config overrides by task
-   */
-  except(tasksList, options = {}) {
-    for (var task in tasks) {
-      if (tasks.hasOwnProperty(task) && !tasksList.includes(task.name)) {
-        this.register(task, options[task.name] || {});
-      }
-    }
-  },
+var _gulpHelp = require('gulp-help');
 
-  /**
-   * Register a gulp task
-   * @param  {Object} task
-   * @param  {Object} options
-   */
-  register(task, options = {}) {
-    if (!task.hasOwnProperty('name') || !task.hasOwnProperty('fn')) throw 'A task must contain a name and fn.';
+var _gulpHelp2 = _interopRequireDefault(_gulpHelp);
 
-    let taskFn = task.fn.bind(this, gulpHelp, options);
-    gulpHelp.task(task.name, task.description, task.deps, taskFn, task.options);
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
+
+var gulpHelp = (0, _gulpHelp2.default)(_gulp2.default, {});
+
+exports.default = { start: start, task: task };
+
+
+function start() {
+  var tasks = arguments.length <= 0 || arguments[0] === undefined ? [] : arguments[0];
+  var config = arguments.length <= 1 || arguments[1] === undefined ? {} : arguments[1];
+
+  for (var i = 0; i < tasks.length; i++) {
+    register(tasks[i], config[tasks[i].name]);
   }
-};
+}
+
+function register(igniteTask) {
+  var config = arguments.length <= 1 || arguments[1] === undefined ? {} : arguments[1];
+
+  task(igniteTask.name, [], igniteTask.fn, igniteTask.description, igniteTask.help, config);
+}
+
+function task() {
+  gulpHelp.task(arguments.length <= 0 ? undefined : arguments[0], arguments.length <= 3 ? undefined : arguments[3], arguments.length <= 1 ? undefined : arguments[1], (arguments.length <= 2 ? undefined : arguments[2]).bind({}, arguments.length <= 5 ? undefined : arguments[5]), { options: arguments.length <= 4 ? undefined : arguments[4] });
+}
