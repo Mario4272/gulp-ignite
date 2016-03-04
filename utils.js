@@ -19,9 +19,9 @@ var _gulpUtil = require('gulp-util');
 
 var _gulpUtil2 = _interopRequireDefault(_gulpUtil);
 
-var _notifier = require('notifier');
+var _nodeNotifier = require('node-notifier');
 
-var _notifier2 = _interopRequireDefault(_notifier);
+var _nodeNotifier2 = _interopRequireDefault(_nodeNotifier);
 
 var _config = require('./config');
 
@@ -48,7 +48,7 @@ var IGNITE_UTILS = {
 
     var options = _lodash2.default.extend({ message: message }, _config2.default.notifier.defaults, _config2.default.notifier[success ? 'success' : 'error']);
 
-    _notifier2.default.notify(options);
+    _nodeNotifier2.default.notify(options);
   },
   startTime: function startTime() {
     return process.hrtime();

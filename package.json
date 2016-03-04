@@ -27,7 +27,7 @@
     "gulp-help": "^1.6.1",
     "gulp-util": "^3.0.7",
     "lodash": "^4.6.1",
-    "notifier": "^0.1.7",
+    "node-notifier": "^4.5.0",
     "pretty-hrtime": "^1.0.2"
   },
   "devDependencies": {

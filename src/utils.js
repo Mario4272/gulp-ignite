@@ -3,7 +3,7 @@
 import _ from 'lodash';
 import pretty from 'pretty-hrtime';
 import gutil from 'gulp-util';
-import notifier from 'notifier';
+import notifier from 'node-notifier';
 import config from './config';
 
 const IGNITE_UTILS = {
