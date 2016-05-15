@@ -1,11 +1,9 @@
-'use strict';
-
 import _ from 'lodash';
 import gulp from 'gulp';
-import help from 'gulp-help';
+import gulpHelp from 'gulp-help';
 import { IGNITE_UTILS } from './utils';
 
-const gulpHelp = help(gulp, {});
+const gHelp = gulpHelp(gulp, {});
 
 /**
  * Register all the tasks with configs
@@ -26,11 +24,18 @@ function start(tasks = [], configs = {}) {
       continue;
     }
 
-    let config = _.defaultsDeep(
+    const config = _.defaultsDeep(
       configs[tasks[i].name] || {}, tasks[i].config || {}
     );
 
-    task(tasks[i].name, config.deps || [], tasks[i].fn, tasks[i].description, tasks[i].help, config);
+    task(
+      tasks[i].name,
+      config.deps || [],
+      tasks[i].fn,
+      tasks[i].description,
+      tasks[i].help,
+      config
+    );
   }
 }
 
@@ -44,11 +49,11 @@ function start(tasks = [], configs = {}) {
  * @param  {Object}   config
  */
 function task(name, deps, fn, description = false, help = {}, config = {}) {
-  gulpHelp.task(name, description, deps, gulpFn, { options: help });
+  gHelp.task(name, description, deps, gulpFn, { options: help });
 
   function gulpFn(cb) {
-    let startTime = IGNITE_UTILS.startTime();
-    let promise = fn.call({}, config, end, error);
+    const startTime = IGNITE_UTILS.startTime();
+    const promise = fn.call({}, config, end, error);
     let endCalled = false;
 
     if (promise && typeof promise.on === 'function') {

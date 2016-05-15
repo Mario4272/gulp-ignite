@@ -1,5 +1,3 @@
-'use strict';
-
 import _ from 'lodash';
 import pretty from 'pretty-hrtime';
 import gutil from 'gulp-util';
@@ -9,18 +7,16 @@ import config from './config';
 const IGNITE_UTILS = {
   log(msg, color = 'blue') {
     if (typeof msg === 'object') {
-      for (let item in msg) {
-        if (msg.hasOwnProperty(item)) {
-          this.log(msg[item]);
-        }
-      }
+      Object.keys(msg).forEach((i) => {
+        this.log(msg[i]);
+      });
     } else {
       gutil.log(gutil.colors[color](msg));
     }
   },
 
   notify(message, success = true) {
-    var options = _.extend(
+    const options = _.extend(
       { message },
       config.notifier.defaults,
       config.notifier[success ? 'success' : 'error']
