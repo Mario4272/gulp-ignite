@@ -1,2 +1,5 @@
 node_modules/
+/index.js
+/config.js
+/utils.js
 .DS_Store
