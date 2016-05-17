@@ -63,7 +63,7 @@ function task(name, deps, fn, description = false, help = {}, config = {}) {
     function error(e) {
       IGNITE_UTILS.notify(`${name} complete --- ${IGNITE_UTILS.getDuration(startTime)}`, false);
 
-      if (e & e.message) {
+      if (e && e.message) {
         IGNITE_UTILS.log(e.message, 'red');
 
         return;
