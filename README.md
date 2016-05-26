@@ -51,6 +51,7 @@ ignite.start(tasks, options);
 * [browserify](https://github.com/jscarmona/gulp-ignite-browserify)
 * [eslint](https://github.com/jscarmona/gulp-ignite-eslint)
 * [sass](https://github.com/jscarmona/gulp-ignite-sass)
+* [sitecore](https://github.com/jscarmona/gulp-ignite-sitecore)
 
 ## contributing
 
