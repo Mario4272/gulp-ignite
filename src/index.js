@@ -10,9 +10,13 @@ const runTask = {
   name: 'run',
   description: 'Runs available tasks in sequence',
   fn(config, end, error) {
-    const tasks = yargs.argv._;
+    if (typeof yargs.argv.tasks !== 'string' && typeof yargs.argv.t !== 'string') {
+      error({ message: 'No tasks were passed into the run task.' });
 
-    tasks.shift();
+      return;
+    }
+
+    const tasks = (yargs.argv.tasks || yargs.argv.t).split(',').map((t) => t.trim());
 
     if (!tasks.length) {
       error({ message: 'No tasks were passed into the run task.' });
@@ -20,7 +24,7 @@ const runTask = {
       return;
     }
 
-    runSequence(yargs.argv._, end);
+    runSequence.apply({}, [...tasks, end]);
   },
 };
 
@@ -66,9 +70,14 @@ function start(tasks = [], configs = {}) {
   }
 }
 
+/**
+ * Create a run sequecne wrapper function
+ * @param  {Array} tasks
+ * @return {Funcation}
+ */
 function createRunSequenceFn(tasks) {
   return (config, end) => {
-    runSequence(tasks, end);
+    runSequence.apply({}, [...tasks, end]);
   };
 }
 
