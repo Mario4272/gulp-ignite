@@ -1,9 +1,28 @@
 import _ from 'lodash';
 import gulp from 'gulp';
 import gulpHelp from 'gulp-help';
+import yargs from 'yargs';
+import runSequence from 'run-sequence';
 import { IGNITE_UTILS } from './utils';
 
 const gHelp = gulpHelp(gulp, {});
+const runTask = {
+  name: 'run',
+  description: 'Runs available tasks in sequence',
+  fn(config, end, error) {
+    const tasks = yargs.argv._;
+
+    tasks.shift();
+
+    if (!tasks.length) {
+      error({ message: 'No tasks were passed into the run task.' });
+
+      return;
+    }
+
+    runSequence(yargs.argv._, end);
+  },
+};
 
 /**
  * Register all the tasks with configs
@@ -11,15 +30,23 @@ const gHelp = gulpHelp(gulp, {});
  * @param  {Object} configs
  */
 function start(tasks = [], configs = {}) {
+  tasks.push(runTask);
+
   for (let i = 0; i < tasks.length; i++) {
+    let fn = tasks[i].fn;
+
+    if (Array.isArray(tasks[i].run)) {
+      fn = createRunSequenceFn(tasks[i].run);
+    }
+
     if (!tasks[i].name) {
       IGNITE_UTILS.log('Task does not contain a name property.', 'red');
 
       continue;
     }
 
-    if (typeof tasks[i].fn !== 'function') {
-      IGNITE_UTILS.log('Task does not contain a function (fn) property.', 'red');
+    if (typeof fn !== 'function') {
+      IGNITE_UTILS.log('Task does not contain a function (fn) or a run (run) property.', 'red');
 
       continue;
     }
@@ -31,12 +58,18 @@ function start(tasks = [], configs = {}) {
     task(
       tasks[i].name,
       config.deps || [],
-      tasks[i].fn,
+      fn,
       tasks[i].description,
       tasks[i].help,
       config
     );
   }
+}
+
+function createRunSequenceFn(tasks) {
+  return (config, end) => {
+    runSequence(tasks, end);
+  };
 }
 
 /**
@@ -48,7 +81,7 @@ function start(tasks = [], configs = {}) {
  * @param  {Object}   help
  * @param  {Object}   config
  */
-function task(name, deps, fn, description = false, help = {}, config = {}) {
+function task(name, deps, fn, description = '', help = {}, config = {}) {
   gHelp.task(name, description, deps, gulpFn, { options: help });
 
   function gulpFn(cb) {

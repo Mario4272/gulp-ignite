@@ -46,6 +46,21 @@ const options = {
 ignite.start(tasks, options);
 ```
 
+## built-in tasks
+
+### <a name="run"></a>run
+
+Run tasks defined in sequence.
+
+```
+gulp run browserify sass
+```
+
+##### arguments
+- Tasks to run.
+
+---
+
 ## available packages
 
 * [browserify](https://github.com/jscarmona/gulp-ignite-browserify)

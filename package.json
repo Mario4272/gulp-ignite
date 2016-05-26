@@ -30,7 +30,9 @@
     "gulp-util": "3.0.7",
     "lodash": "4.6.1",
     "node-notifier": "4.5.0",
-    "pretty-hrtime": "1.0.2"
+    "pretty-hrtime": "1.0.2",
+    "run-sequence": "1.2.1",
+    "yargs": "4.7.1"
   },
   "devDependencies": {
     "babel-cli": "6.6.4",
