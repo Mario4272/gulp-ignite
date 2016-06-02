@@ -102,25 +102,37 @@ function task(name, deps, fn, description = '', help = {}, config = {}) {
       promise.on('end', end);
     }
 
-    function error(e) {
-      IGNITE_UTILS.notify(`${name} complete --- ${IGNITE_UTILS.getDuration(startTime)}`, false);
+    function error(message, fatal = true) {
+      IGNITE_UTILS.notify(`${name} error --- ${IGNITE_UTILS.getDuration(startTime)}`, false);
 
-      if (e && e.message) {
-        IGNITE_UTILS.log(e.message, 'red');
+      if (message) {
+        IGNITE_UTILS.log(message, 'red');
+      }
+
+      if (fatal) {
+        process.exit(1);
 
         return;
       }
 
-      cb();
+      if (!endCalled) {
+        endTask();
+      }
     }
 
-    function end(e) {
-      if (endCalled) return;
-
-      endCalled = true;
+    function end() {
+      if (endCalled) {
+        return;
+      }
 
       IGNITE_UTILS.notify(`${name} complete --- ${IGNITE_UTILS.getDuration(startTime)}`);
-      cb(e);
+      endTask();
+    }
+
+    function endTask() {
+      endCalled = true;
+
+      cb();
     }
   }
 }
