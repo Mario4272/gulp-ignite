@@ -93,46 +93,21 @@ function createRunSequenceFn(tasks) {
 function task(name, deps, fn, description = '', help = {}, config = {}) {
   gHelp.task(name, description, deps, gulpFn, { options: help });
 
-  function gulpFn(cb) {
-    const startTime = IGNITE_UTILS.startTime();
+  function gulpFn(end) {
     const promise = fn.call({}, config, end, error);
-    let endCalled = false;
 
-    if (promise && typeof promise.on === 'function') {
-      promise.on('end', end);
+    if (promise) {
+      return promise;
     }
 
     function error(message, fatal = true) {
-      IGNITE_UTILS.notify(`${name} error --- ${IGNITE_UTILS.getDuration(startTime)}`, false);
-
       if (message) {
         IGNITE_UTILS.log(message, 'red');
       }
 
       if (fatal) {
         process.exit(1);
-
-        return;
       }
-
-      if (!endCalled) {
-        endTask();
-      }
-    }
-
-    function end() {
-      if (endCalled) {
-        return;
-      }
-
-      IGNITE_UTILS.notify(`${name} complete --- ${IGNITE_UTILS.getDuration(startTime)}`);
-      endTask();
-    }
-
-    function endTask() {
-      endCalled = true;
-
-      cb();
     }
   }
 }
