@@ -94,7 +94,7 @@ function task(name, deps, fn, description = '', help = {}, config = {}) {
   gHelp.task(name, description, deps, gulpFn, { options: help });
 
   function gulpFn(end) {
-    const promise = fn.call({}, config, end, error);
+    const promise = fn.call({}, config, end, error, gHelp);
 
     if (promise) {
       return promise;
