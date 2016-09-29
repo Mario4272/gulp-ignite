@@ -1,115 +1,92 @@
-import _ from 'lodash';
 import gulp from 'gulp';
 import gulpHelp from 'gulp-help';
-import yargs from 'yargs';
 import runSequence from 'run-sequence';
+import gutil from 'gulp-util';
+import watchTask from './watch';
 import { IGNITE_UTILS } from './utils';
 
-const gHelp = gulpHelp(gulp, {});
-const runTask = {
-  name: 'run',
-  description: 'Runs available tasks in sequence',
-  fn(config, end, error) {
-    if (typeof yargs.argv.tasks !== 'string' && typeof yargs.argv.t !== 'string') {
-      error({ message: 'No tasks were passed into the run task.' });
+/**
+ * Instance of gulp help to use
+ * @type {Object}
+ */
+export const instance = gulpHelp(gulp, {});
 
-      return;
-    }
+/**
+ * @private
+ */
+const createRunSequence = (tasks) => (config, end) => runSequence.apply({}, [...tasks, end]);
 
-    const tasks = (yargs.argv.tasks || yargs.argv.t).split(',').map((t) => t.trim());
+/**
+ * @private
+ */
+const createGulpTaskFn = (fn, config) => (end) => {
+  const promise = fn(
+    config,
+    end,
+    (message, fatal = true) => {
+      if (message) IGNITE_UTILS.log(message, 'red');
+      if (fatal) process.exit(1);
+    },
+    instance
+  );
 
-    if (!tasks.length) {
-      error({ message: 'No tasks were passed into the run task.' });
-
-      return;
-    }
-
-    runSequence.apply({}, [...tasks, end]);
-  },
+  if (promise) return promise;
 };
 
 /**
- * Register all the tasks with configs
- * @param  {Array} tasks
- * @param  {Object} configs
+ * @private
  */
-function start(tasks = [], configs = {}) {
-  tasks.push(runTask);
+const createGulpTask = (task) => {
+  const { name, description, config, help, fn, run } = task;
+  let taskFn = fn;
 
-  for (let i = 0; i < tasks.length; i++) {
-    let fn = tasks[i].fn;
-
-    if (Array.isArray(tasks[i].run)) {
-      fn = createRunSequenceFn(tasks[i].run);
-    }
-
-    if (!tasks[i].name) {
-      IGNITE_UTILS.log('Task does not contain a name property.', 'red');
-
-      continue;
-    }
-
-    if (typeof fn !== 'function') {
-      IGNITE_UTILS.log('Task does not contain a function (fn) or a run (run) property.', 'red');
-
-      continue;
-    }
-
-    const config = _.defaultsDeep(
-      configs[tasks[i].name] || {}, tasks[i].config || {}
-    );
-
-    task(
-      tasks[i].name,
-      config.deps || [],
-      fn,
-      tasks[i].description,
-      tasks[i].help,
-      config
-    );
+  if (!name) {
+    throw Error('Task does not contain a name property.');
   }
-}
+
+  if (Array.isArray(run)) {
+    taskFn = createRunSequence(run);
+  }
+
+  if (typeof taskFn !== 'function') {
+    throw Error('Task does not contain a function (fn) or a run (run) property.');
+  }
+
+  return instance.task.apply({}, [
+    name,
+    description,
+    config && config.deps ? config.deps : [],
+    createGulpTaskFn(taskFn, config),
+    { options: help },
+  ]);
+};
 
 /**
- * Create a run sequecne wrapper function
- * @param  {Array} tasks
- * @return {Funcation}
+ * Create a gulp task
  */
-function createRunSequenceFn(tasks) {
-  return (config, end) => {
-    runSequence.apply({}, [...tasks, end]);
-  };
-}
+export const task = (name, taskTemplate = {}, options = {}) => {
+  if (typeof name === 'object' && name.name && (name.fn || name.run)) {
+    return createGulpTask({ ...name, config: { ...name.config, ...taskTemplate } });
+  }
+
+  if (Array.isArray(taskTemplate)) {
+    const description = gutil.colors.cyan(`[${taskTemplate}]`);
+
+    return createGulpTask({ name, description: `Runs the following tasks: ${description}`, run: taskTemplate });
+  }
+
+  return createGulpTask({ ...taskTemplate, config: { ...taskTemplate.config, ...options }, name });
+};
 
 /**
- * Register a single task on the custom instance of gulp
- * @param  {string}   name
- * @param  {Array}    deps
- * @param  {Function} fn
- * @param  {string}   description
- * @param  {Object}   help
- * @param  {Object}   config
+ * Create a gulp watch
+ * @param {string} name
+ * @param {string[]} files
+ * @param {string[]} tasks
+ * @return {Object}
  */
-function task(name, deps, fn, description = '', help = {}, config = {}) {
-  gHelp.task(name, description, deps, gulpFn, { options: help });
+export const watch = (name, files, tasks) => {
+  const description = gutil.colors.cyan(`[${tasks}]`);
 
-  function gulpFn(end) {
-    const promise = fn.call({}, config, end, error, gHelp);
-
-    if (promise) {
-      return promise;
-    }
-
-    function error(message, fatal = true) {
-      if (message) {
-        IGNITE_UTILS.log(message, 'red');
-      }
-
-      if (fatal) {
-        process.exit(1);
-      }
-    }
-  }
-}
-
-export default { start, task };
+  return task(name, { ...watchTask, description: `${watchTask.description}: ${description}` }, { files, tasks });
+};
