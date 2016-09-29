@@ -24,48 +24,32 @@ $ npm i -D gulp-ignite gulp-ignite-browserify gulp-ignite-eslint babelify
 #### Create `gulpfile.babel.js` and add the following:
 
 ```js
-import ignite from 'gulp-ignite';
+import { task, watch } from 'gulp-ignite';
 import browserify from 'gulp-ignite-browserify';
 import eslint from 'gulp-ignite-eslint';
 import babelify from 'babelify';
 
-const tasks = [
+task(eslint);
+task(
+  'scripts',
   browserify,
-  eslint,
-];
-
-const options = {
-  browserify: {
+  {
     deps: ['eslint'],
     options: [
       transforms: [babelify]
     ],
   }
-}
-
-ignite.start(tasks, options);
+);
+watch('scripts:watch', './client/app/**/*.js', ['scripts']);
 ```
-
-## built-in tasks
-
-### <a name="run"></a>run
-
-Run tasks defined in sequence.
-
-```
-gulp run browserify sass
-```
-
-##### arguments
-- Tasks to run.
-
----
 
 ## available packages
 
 * [browserify](https://github.com/jscarmona/gulp-ignite-browserify)
 * [eslint](https://github.com/jscarmona/gulp-ignite-eslint)
 * [sass](https://github.com/jscarmona/gulp-ignite-sass)
+* [mocha](https://github.com/jscarmona/gulp-ignite-mocha)
+* [istanbul](https://github.com/jscarmona/gulp-ignite-istanbul)
 * [sitecore](https://github.com/jscarmona/gulp-ignite-sitecore)
 
 ## contributing
