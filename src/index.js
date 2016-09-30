@@ -1,7 +1,8 @@
 import gulp from 'gulp';
-import gulpHelp from 'gulp-help';
+import gHelp from 'gulp-help';
+import gUtil from 'gulp-util';
 import runSequence from 'run-sequence';
-import gutil from 'gulp-util';
+import defaultsDeep from 'lodash/defaultsDeep';
 import watchTask from './watch';
 import { IGNITE_UTILS } from './utils';
 
@@ -9,84 +10,78 @@ import { IGNITE_UTILS } from './utils';
  * Instance of gulp help to use
  * @type {Object}
  */
-export const instance = gulpHelp(gulp, {});
+export const instance = gHelp(gulp, {});
 
 /**
- * @private
+ * Extend a premade template
  */
-const createRunSequence = (tasks) => (config, end) => runSequence.apply({}, [...tasks, end]);
+export const extend = (name, ...args) => defaultsDeep({}, { name }, ...args.reverse());
 
 /**
- * @private
+ * Create a task from a template
  */
-const createGulpTaskFn = (fn, config) => (end) => {
-  const promise = fn(
-    config,
-    end,
-    (message, fatal = true) => {
-      if (message) IGNITE_UTILS.log(message, 'red');
-      if (fatal) process.exit(1);
-    },
-    instance
-  );
+export const task = (name, taskTemplate = {}, options = {}) => {
+  if (typeof name === 'object') {
+    return createGulpTask(name, taskTemplate);
+  }
 
-  if (promise) return promise;
+  return createGulpTask(extend(name, taskTemplate), options);
 };
 
 /**
+ * Create a run task
+ */
+export const run = (name, tasks = []) => (
+  task(name, {
+    description: `Runs the following tasks: ${gUtil.colors.cyan(`[${tasks}]`)}`,
+    fn: (config, end) => runSequence.apply({}, [...tasks, end]),
+  })
+);
+
+/**
+ * Create a gulp watch
+ */
+export const watch = (name, files, tasks) => {
+  const template = extend(name, watchTask, {
+    description: `${watchTask.description}: ${gUtil.colors.cyan(`[${tasks}]`)}`,
+  });
+
+  return task(template, { files, tasks });
+};
+
+/**
+ * Bulk register tasks
+ */
+export const start = (tasks = [], options = {}) => tasks.forEach((t) => task(t, options[t.name]));
+
+/**
  * @private
  */
-const createGulpTask = (task) => {
-  const { name, description, config, help, fn, run } = task;
-  let taskFn = fn;
+const createGulpTask = (taskTemplate, options = {}) => {
+  const { name, description, help, fn } = taskTemplate;
+  const config = defaultsDeep({}, options, taskTemplate.config);
 
   if (!name) {
     throw Error('Task does not contain a name property.');
   }
 
-  if (Array.isArray(run)) {
-    taskFn = createRunSequence(run);
-  }
-
-  if (typeof taskFn !== 'function') {
+  if (typeof fn !== 'function') {
     throw Error('Task does not contain a function (fn) or a run (run) property.');
   }
 
-  return instance.task.apply({}, [
+  return instance.task(
     name,
     description,
-    config && config.deps ? config.deps : [],
-    createGulpTaskFn(taskFn, config),
-    { options: help },
-  ]);
+    config.deps || [],
+    (end) => fn(config, end, gulpErrorFn, instance),
+    { options: help }
+  );
 };
 
 /**
- * Create a gulp task
+ * @private
  */
-export const task = (name, taskTemplate = {}, options = {}) => {
-  if (typeof name === 'object' && name.name && (name.fn || name.run)) {
-    return createGulpTask({ ...name, config: { ...name.config, ...taskTemplate } });
-  }
-
-  if (Array.isArray(taskTemplate)) {
-    const description = gutil.colors.cyan(`[${taskTemplate}]`);
-
-    return createGulpTask({ name, description: `Runs the following tasks: ${description}`, run: taskTemplate });
-  }
-
-  return createGulpTask({ ...taskTemplate, config: { ...taskTemplate.config, ...options }, name });
-};
-
-/**
- * Create a gulp watch
- * @param {string} name
- * @param {string[]} files
- * @param {string[]} tasks
- * @return {Object}
- */
-export const watch = (name, files, tasks) => {
-  const description = gutil.colors.cyan(`[${tasks}]`);
-
-  return task(name, { ...watchTask, description: `${watchTask.description}: ${description}` }, { files, tasks });
+const gulpErrorFn = (message, fatal = true) => {
+  if (message) IGNITE_UTILS.log(message, 'red');
+  if (fatal) process.exit(1);
 };
